@@ -349,7 +349,7 @@
 
     <div class="bar">
       <div class="bar-in">
-        <button type="submit" class="btn-submit" id="btnGuardar">
+        <button type="button" class="btn-submit" id="btnGuardar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
           <span id="btnTexto">Guardar registro</span>
         </button>
@@ -526,8 +526,22 @@
   }
 
   /* ---------- Envío ---------- */
-  form.addEventListener('submit', (e) => {
+  // El formulario nunca se envía solo (ni con Enter / "Ir" del teclado)
+form.addEventListener('submit', (e) => e.preventDefault());
+
+// Con Enter, pasa al siguiente campo en lugar de guardar
+form.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
     e.preventDefault();
+    const campos = Array.from(form.querySelectorAll('input, select'));
+    const sig = campos[campos.indexOf(e.target) + 1];
+    if (sig) sig.focus(); else e.target.blur();
+  }
+});
+
+// Solo se guarda al presionar el botón
+$('btnGuardar').addEventListener('click', () => {
+
 
     if (!form.checkValidity()) {
       form.reportValidity();
