@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1c1b4b">
+  <title>Bitácora de Vehículo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --night: #1c1b4b;
+      --night-2: #2a2878;
+      --violet: #5b4bff;
+      --violet-soft: #ecebff;
+      --coral: #ff6b57;
+      --amber: #ffb020;
+      --amber-soft: #fff4dc;
+      --ink: #1d1d33;
+      --muted: #7a7a96;
+      --field: #f3f3fa;
+      --bg: #f6f5fc;
+      --ok: #12a46b;
+      --err: #e5384a;
+      --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.4;
+      padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* ---------- Encabezado ---------- */
+    header {
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      padding: calc(26px + env(safe-area-inset-top, 0px)) 22px 70px;
+      background: linear-gradient(150deg, var(--night) 0%, var(--night-2) 60%, #4637d6 100%);
+      border-radius: 0 0 36px 36px;
+    }
+    header::before, header::after {
+      content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+    }
+    header::before { width: 220px; height: 220px; right: -70px; top: -80px; background: rgba(255,255,255,.07); }
+    header::after  { width: 140px; height: 140px; right: 60px; bottom: -70px; background: rgba(255,107,87,.28); }
+    .head-in { max-width: 560px; margin: 0 auto; position: relative; z-index: 1; }
+    .head-top { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 46px; height: 46px; border-radius: 14px;
+      background: rgba(255,255,255,.14);
+      display: grid; place-items: center;
+    }
+    .logo svg { width: 26px; height: 26px; }
+    header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+    header p { margin: 2px 0 0; font-size: 14px; color: #c9c6ff; }
+
+    main { max-width: 560px; margin: -40px auto 0; padding: 0 16px; position: relative; z-index: 2; }
+
+    /* ---------- Tarjetas ---------- */
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 20px 18px 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 30px -12px rgba(40,34,120,.25);
+    }
+    .card-title {
+      display: flex; align-items: center; gap: 10px;
+      margin: 0 0 6px;
+      font-size: 17px; font-weight: 800; letter-spacing: -0.01em;
+    }
+    .ico {
+      width: 34px; height: 34px; border-radius: 11px;
+      display: grid; place-items: center; flex: none;
+      background: var(--violet-soft);
+    }
+    .ico svg { width: 18px; height: 18px; }
+    .opt {
+      margin-left: auto;
+      font-size: 12px; font-weight: 600; color: #a36a00;
+      background: var(--amber-soft); padding: 4px 10px; border-radius: 99px;
+    }
+
+    label {
+      display: block; margin: 16px 0 0 2px;
+      font-size: 13px; font-weight: 600; color: var(--muted);
+    }
+    input, select {
+      width: 100%;
+      min-height: 54px;
+      margin-top: 7px;
+      padding: 14px 16px;
+      font: inherit; font-size: 16px; font-weight: 500;
+      color: var(--ink);
+      background: var(--field);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      appearance: none; -webkit-appearance: none;
+      transition: border-color .15s, background .15s, box-shadow .15s;
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%237a7a96' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 16px center; padding-right: 42px;
+    }
+    input::placeholder { color: #a9a9c0; font-weight: 400; }
+    input:focus, select:focus {
+      outline: none; background: #fff;
+      border-color: var(--violet);
+      box-shadow: 0 0 0 4px rgba(91,75,255,.14);
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ---------- Ruta (línea de tiempo) ---------- */
+    .route { position: relative; margin-top: 14px; }
+    .stop { position: relative; padding-left: 38px; }
+    .stop + .stop { margin-top: 18px; }
+    .stop::before {
+      content: ""; position: absolute; left: 7px; top: 4px;
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 4px solid var(--violet); background: #fff;
+    }
+    .stop.end::before {
+      border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+      border-color: var(--coral); background: var(--coral);
+      width: 18px; height: 18px; left: 6px;
+    }
+    .stop:not(.end)::after {
+      content: ""; position: absolute; left: 13px; top: 26px; bottom: -22px;
+      border-left: 3px dotted #c9c7ee;
+    }
+    .stop h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+    .stop label { margin-top: 10px; font-size: 12px; }
+    .coord-group { display: flex; gap: 8px; margin-top: 7px; }
+    .coord-group input { margin-top: 0; flex: 1; min-width: 0; }
+    .btn-gps, .btn-map {
+      flex: none; min-height: 54px;
+      border: none; border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      font: inherit; font-size: 14px; font-weight: 700;
+      text-decoration: none; cursor: pointer;
+    }
+    .btn-gps { padding: 0 14px; background: var(--violet); color: #fff; }
+    .btn-gps:active { background: #4638d8; }
+    .btn-map { width: 54px; background: var(--violet-soft); }
+    .btn-map:active { background: #dcdaff; }
+    .btn-gps svg, .btn-map svg { width: 18px; height: 18px; }
+
+    /* ---------- Odómetro ---------- */
+    .odo { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+    .odo input {
+      font-size: 22px; font-weight: 800; letter-spacing: .02em;
+      font-variant-numeric: tabular-nums;
+      text-align: center; background: var(--night); color: #fff;
+      border-radius: 16px;
+    }
+    .odo input::placeholder { color: #6c6aa8; }
+    .odo input:focus { background: var(--night-2); border-color: var(--violet); box-shadow: 0 0 0 4px rgba(91,75,255,.25); }
+    .odo label { margin-top: 6px; text-align: center; }
+    .odo-wrap { margin-top: 10px; }
+    .km-total {
+      margin-top: 14px; padding: 14px 16px; border-radius: 16px;
+      background: var(--violet-soft);
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 14px; font-weight: 600; color: var(--violet);
+    }
+    .km-total strong { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+    .km-total.bad { background: #ffe9ec; color: var(--err); }
+
+    /* ---------- Gasolina ---------- */
+    .card.fuel { background: linear-gradient(180deg, var(--amber-soft) 0%, #fff 46%); }
+    .card.fuel .ico { background: var(--amber); }
+    .card.fuel input { background: #fff; border-color: #f1e3bf; }
+    .card.fuel input:focus { border-color: var(--amber); box-shadow: 0 0 0 4px rgba(255,176,32,.22); }
+
+    /* ---------- Botón flotante ---------- */
+    .bar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+      padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+      background: linear-gradient(180deg, rgba(246,245,252,0) 0%, var(--bg) 40%);
+      pointer-events: none;
+    }
+    .bar-in { max-width: 560px; margin: 0 auto; pointer-events: auto; }
+    .btn-submit {
+      width: 100%; min-height: 58px; border: none; border-radius: 20px;
+      background: linear-gradient(135deg, var(--violet), #7a5cff);
+      color: #fff; font: inherit; font-size: 17px; font-weight: 800; letter-spacing: .01em;
+      box-shadow: 0 12px 24px -8px rgba(91,75,255,.65);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-submit:active { transform: scale(.985); }
+    .btn-submit:disabled { opacity: .65; }
+    .btn-submit svg { width: 20px; height: 20px; }
+
+    /* ---------- Aviso ---------- */
+    .toast {
+      position: fixed; left: 16px; right: 16px;
+      top: calc(14px + env(safe-area-inset-top, 0px));
+      max-width: 528px; margin: 0 auto;
+      padding: 15px 18px; border-radius: 18px;
+      color: #fff; font-weight: 700; font-size: 15px;
+      box-shadow: 0 14px 30px -10px rgba(0,0,0,.4);
+      transform: translateY(-150%); transition: transform .3s cubic-bezier(.2,.9,.3,1.2);
+      z-index: 20;
+    }
+    .toast.show { transform: translateY(0); }
+    .toast.ok { background: var(--ok); }
+    .toast.err { background: var(--err); }
+    .toast.info { background: var(--night); }
+
+    @media (prefers-reduced-motion: reduce) { .toast, .btn-submit { transition: none; } }
+    @media (max-width: 350px) { .row, .odo { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="head-top">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M3 13l2-6a2 2 0 0 1 2-1.5h10A2 2 0 0 1 19 7l2 6v4h-2.5M3 13v4h2.5M3 13h18"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg>
+      </div>
+      <div>
+        <h1>Bitácora de vehículo</h1>
+        <p>Captura tu traslado y carga de gasolina</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <form id="bitacoraForm" novalidate>
+
+    <!-- VIAJE -->
+    <section class="card">
+      <h2 class="card-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#5b4bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
+        Datos del viaje
+      </h2>
+
+      <label for="usuario">Usuario</label>
+      <select id="usuario" required>
+        <option value="" disabled selected>Selecciona un usuario</option>
+        <option value="FERNANDO GOMEZ NOGUEZ">FERNANDO GOMEZ NOGUEZ</option>
+        <option value="JORGE ALBERTO ROBLES CORTEZ">JORGE ALBERTO ROBLES CORTEZ</option>
+        <option value="JESUS EDUARDO RODRIGUEZ HERNANDEZ">JESUS EDUARDO RODRIGUEZ HERNANDEZ</option>
+      </select>
+
+      <label for="fecha_traslado">Fecha del traslado</label>
+      <input type="date" id="fecha_traslado" required>
+
+      <label for="asunto">Motivo del traslado</label>
+      <input type="text" id="asunto" placeholder="Ej. SUPERVISION PROYECTO THO" autocomplete="off" required>
+    </section>
+
+    <!-- RUTA -->
+    <section class="card">
+      <h2 class="card-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#5b4bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6a4 4 0 0 0 0-8h-4a4 4 0 0 1 0-8h6"/></svg></span>
+        Ruta
+      </h2>
+
+      <div class="route">
+        <div class="stop">
+          <h3>Origen</h3>
+          <label for="coords_de">Coordenadas</label>
+          <div class="coord-group">
+            <input type="text" id="coords_de" placeholder="31.7269, -106.4335" autocomplete="off">
+            <button type="button" class="btn-gps" data-gps="de">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg>
+              GPS
+            </button>
+            <a class="btn-map" id="map_de" href="https://maps.google.com" target="_blank" rel="noopener" aria-label="Abrir en Google Maps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#5b4bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>
+            </a>
+          </div>
+          <label for="traslado_de">Dirección</label>
+          <input type="text" id="traslado_de" placeholder="Se completa con el GPS" autocomplete="off">
+        </div>
+
+        <div class="stop end">
+          <h3>Destino</h3>
+          <label for="coords_a">Coordenadas</label>
+          <div class="coord-group">
+            <input type="text" id="coords_a" placeholder="31.5983, -106.3832" autocomplete="off">
+            <button type="button" class="btn-gps" data-gps="a">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/></svg>
+              GPS
+            </button>
+            <a class="btn-map" id="map_a" href="https://maps.google.com" target="_blank" rel="noopener" aria-label="Abrir en Google Maps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#5b4bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>
+            </a>
+          </div>
+          <label for="traslado_a">Dirección</label>
+          <input type="text" id="traslado_a" placeholder="Se completa con el GPS" autocomplete="off">
+        </div>
+      </div>
+    </section>
+
+    <!-- KILOMETRAJE -->
+    <section class="card">
+      <h2 class="card-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#5b4bff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/></svg></span>
+        Kilometraje
+      </h2>
+      <div class="odo">
+        <div>
+          <input type="number" id="km_inicial" inputmode="numeric" placeholder="000000" required aria-label="Km inicial">
+          <label for="km_inicial">Km inicial</label>
+        </div>
+        <div>
+          <input type="number" id="km_final" inputmode="numeric" placeholder="000000" required aria-label="Km final">
+          <label for="km_final">Km final</label>
+        </div>
+      </div>
+      <div class="km-total" id="kmTotalBox">
+        <span>Recorrido</span>
+        <strong id="kmTotal">— km</strong>
+      </div>
+    </section>
+
+    <!-- GASOLINA -->
+    <section class="card fuel">
+      <h2 class="card-title">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1d33" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h4"/></svg></span>
+        Carga de gasolina
+        <span class="opt">Opcional</span>
+      </h2>
+      <div class="row">
+        <div>
+          <label for="importe">Importe (MXN)</label>
+          <input type="number" step="0.01" id="importe" inputmode="decimal" placeholder="0.00">
+        </div>
+        <div>
+          <label for="litros">Litros</label>
+          <input type="number" step="0.01" id="litros" inputmode="decimal" placeholder="0.00">
+        </div>
+      </div>
+      <label for="ticket_folio">Ticket / Folio</label>
+      <input type="text" id="ticket_folio" placeholder="Ej. 000042819470" autocomplete="off">
+    </section>
+
+    <div class="bar">
+      <div class="bar-in">
+        <button type="submit" class="btn-submit" id="btnGuardar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span id="btnTexto">Guardar registro</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // Enlace web de tu Apps Script
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4t38oGMc0L4sZQQKIIb4dxoPzQCyMTTHTCBvxe0YljdkJIqwZoZKXl8FtCbfF9Qf09Q/exec';
+
+  const $ = (id) => document.getElementById(id);
+  const form = $('bitacoraForm');
+
+  /* ---------- Utilidades ---------- */
+  let toastTimer;
+  function aviso(texto, tipo = 'info', ms = 3200) {
+    const t = $('toast');
+    t.textContent = texto;
+    t.className = 'toast ' + tipo + ' show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+  }
+
+  function hoyLocal() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+  }
+
+  function parseCoords(val) {
+    if (!val || !val.includes(',')) return null;
+    const p = val.split(',');
+    const lat = parseFloat(p[0]);
+    const lng = parseFloat(p[1]);
+    return (isNaN(lat) || isNaN(lng)) ? null : { lat, lng };
+  }
+
+  /* ---------- Km recorridos ---------- */
+  function actualizarKm() {
+    const ini = parseFloat($('km_inicial').value);
+    const fin = parseFloat($('km_final').value);
+    const box = $('kmTotalBox');
+    box.classList.remove('bad');
+    if (isNaN(ini) || isNaN(fin)) { $('kmTotal').textContent = '— km'; return; }
+    const dif = fin - ini;
+    if (dif < 0) box.classList.add('bad');
+    $('kmTotal').textContent = dif.toLocaleString('es-MX') + ' km';
+  }
+  $('km_inicial').addEventListener('input', actualizarKm);
+  $('km_final').addEventListener('input', actualizarKm);
+
+  /* ---------- Enlaces a Google Maps ---------- */
+  function actualizarMapa(coordId, linkId) {
+    const c = parseCoords($(coordId).value);
+    $(linkId).href = c
+      ? `https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`
+      : 'https://maps.google.com';
+  }
+
+  /* ---------- Dirección a partir de coordenadas ---------- */
+  function buscarDireccion(lat, lng, targetInputId) {
+    const input = $(targetInputId);
+    input.placeholder = 'Buscando dirección...';
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`;
+
+    fetch(url, { headers: { 'Accept-Language': 'es' } })
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.address) {
+          const a = data.address;
+          const calle = a.road || a.pedestrian || a.footway || a.street || '';
+          const numero = a.house_number || a.building || '';
+          const colonia = a.neighbourhood || a.suburb || a.residential || a.quarter || '';
+          const cp = a.postcode ? `CP ${a.postcode}` : '';
+          const ciudad = a.city || a.town || a.municipality || 'Juárez';
+
+          const partes = [];
+          if (calle) partes.push(calle + (numero ? ` ${numero}` : ''));
+          else if (numero) partes.push(`No. ${numero}`);
+          if (colonia && colonia !== calle) partes.push(colonia);
+          if (cp) partes.push(cp);
+          if (ciudad) partes.push(ciudad);
+
+          input.value = partes.join(', ') || data.display_name || '';
+        } else {
+          input.placeholder = 'No se encontró; escríbela a mano';
+        }
+      })
+      .catch(err => {
+        console.error('Error al obtener dirección:', err);
+        input.placeholder = 'Escribe la dirección a mano';
+      });
+  }
+
+  function obtenerGPS(coordId, dirId, linkId) {
+    const input = $(coordId);
+    if (!('geolocation' in navigator)) {
+      aviso('Este navegador no tiene geolocalización.', 'err');
+      return;
+    }
+    input.placeholder = 'Obteniendo GPS...';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        input.value = `${lat}, ${lng}`;
+        actualizarMapa(coordId, linkId);
+        buscarDireccion(lat, lng, dirId);
+      },
+      () => {
+        aviso('No se pudo obtener el GPS. Revisa los permisos de ubicación.', 'err', 4000);
+        input.placeholder = '31.7269, -106.4335';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  document.querySelectorAll('[data-gps]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.gps; // "de" | "a"
+      obtenerGPS('coords_' + k, 'traslado_' + k, 'map_' + k);
+    });
+  });
+
+  ['de', 'a'].forEach(k => {
+    $('coords_' + k).addEventListener('change', () => {
+      actualizarMapa('coords_' + k, 'map_' + k);
+      const c = parseCoords($('coords_' + k).value);
+      if (c) buscarDireccion(c.lat, c.lng, 'traslado_' + k);
+    });
+  });
+
+  /* ---------- Último Km del usuario ---------- */
+  $('usuario').addEventListener('change', () => {
+    const usuario = $('usuario').value;
+    const kmIni = $('km_inicial');
+    if (!usuario) return;
+
+    kmIni.placeholder = 'Cargando...';
+    fetch(`${SCRIPT_URL}?usuario=${encodeURIComponent(usuario)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.result === 'success' && data.ultimo_km) {
+          kmIni.value = data.ultimo_km;
+        } else {
+          kmIni.value = '';
+          kmIni.placeholder = '000000';
+        }
+        actualizarKm();
+      })
+      .catch(err => {
+        console.error('Error al consultar kilometraje:', err);
+        kmIni.placeholder = '000000';
+      });
+  });
+
+  /* ---------- Limpiar para un nuevo registro ---------- */
+  function limpiarFormulario() {
+    form.reset();
+    $('fecha_traslado').value = hoyLocal();
+    $('coords_de').placeholder = '31.7269, -106.4335';
+    $('coords_a').placeholder = '31.5983, -106.3832';
+    $('traslado_de').placeholder = 'Se completa con el GPS';
+    $('traslado_a').placeholder = 'Se completa con el GPS';
+    $('km_inicial').placeholder = '000000';
+    actualizarMapa('coords_de', 'map_de');
+    actualizarMapa('coords_a', 'map_a');
+    actualizarKm();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ---------- Envío ---------- */
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    const ini = parseFloat($('km_inicial').value);
+    const fin = parseFloat($('km_final').value);
+    if (fin < ini) {
+      aviso('El Km final no puede ser menor al Km inicial.', 'err', 4000);
+      $('km_final').focus();
+      return;
+    }
+
+    const btn = $('btnGuardar');
+    btn.disabled = true;
+    $('btnTexto').textContent = 'Guardando...';
+
+    const payload = {
+      usuario: $('usuario').value,
+      fecha_traslado: $('fecha_traslado').value,
+      asunto: $('asunto').value,
+      traslado_de: $('traslado_de').value,
+      coords_de: $('coords_de').value,
+      traslado_a: $('traslado_a').value,
+      coords_a: $('coords_a').value,
+      km_inicial: $('km_inicial').value,
+      km_final: $('km_final').value,
+      importe: $('importe').value,
+      litros: $('litros').value,
+      ticket_folio: $('ticket_folio').value
+    };
+
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(() => {
+      limpiarFormulario();
+      aviso('Registro guardado. Ya puedes capturar uno nuevo.', 'ok');
+    })
+    .catch(error => {
+      console.error(error);
+      aviso('No se pudo enviar. Revisa tu conexión y vuelve a intentar.', 'err', 4500);
+    })
+    .finally(() => {
+      btn.disabled = false;
+      $('btnTexto').textContent = 'Guardar registro';
+    });
+  });
+
+  // Estado inicial
+  $('fecha_traslado').value = hoyLocal();
+</script>
+
+</body>
+</html>
