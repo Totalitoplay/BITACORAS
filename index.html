@@ -517,6 +517,7 @@
   /* ---------- Limpiar para un nuevo registro ---------- */
   function limpiarFormulario() {
     form.reset();
+    localStorage.removeItem('bitacora_borrador'); // Borra la memoria temporal
     $('fecha_traslado').value = hoyLocal();
     $('coords_de').placeholder = '31.7269, -106.4335';
     $('coords_a').placeholder = '31.5983, -106.3832';
@@ -528,6 +529,47 @@
     actualizarKm();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  // Guardar borrador automáticamente al cambiar cualquier campo
+form.addEventListener('input', () => {
+  const borrador = {
+    usuario: $('usuario').value,
+    fecha_traslado: $('fecha_traslado').value,
+    asunto: $('asunto').value,
+    traslado_de: $('traslado_de').value,
+    coords_de: $('coords_de').value,
+    traslado_a: $('traslado_a').value,
+    coords_a: $('coords_a').value,
+    km_inicial: $('km_inicial').value,
+    km_final: $('km_final').value,
+    importe: $('importe').value,
+    litros: $('litros').value,
+    ticket_folio: $('ticket_folio').value
+  };
+  localStorage.setItem('bitacora_borrador', JSON.stringify(borrador));
+});
+
+// Restaurar borrador al cargar la página
+function restaurarBorrador() {
+  const guardado = localStorage.getItem('bitacora_borrador');
+  if (!guardado) return;
+  
+  try {
+    const data = JSON.parse(guardado);
+    Object.keys(data).forEach(key => {
+      const el = $(key);
+      if (el && data[key]) el.value = data[key];
+    });
+    actualizarMapa('coords_de', 'map_de');
+    actualizarMapa('coords_a', 'map_a');
+    actualizarKm();
+  } catch(e) {
+    console.error('Error al restaurar borrador:', e);
+  }
+}
+
+// Ejecutar restauración al iniciar
+restaurarBorrador();
 
   /* ---------- Envío ---------- */
   // El formulario nunca se envía solo (ni con Enter / "Ir" del teclado)
